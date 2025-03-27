@@ -1,0 +1,31 @@
+---
+title: 'DS 2020 - Project Proposal'
+author: "Eitan Tuchin, Tirmidi Mohamed"
+date: "03/27/2025"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Proposal
+
+### Research Topic
+
+### Team Members
+
+The team members working on this project are Eitan Tuchin and Tirmidi Mohamed.
+
+### Description of Dataset
+
+```{r}
+#data <- read.csv("<csv here>")
+```
+
+### First Data Cleaning Steps
+
+### Marginal Summaries
+
+### Project Idea (Questions we Are Answering)
