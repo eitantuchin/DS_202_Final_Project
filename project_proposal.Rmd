@@ -14,6 +14,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Research Topic
 
+The topic for our research project is about bad-drivers in the US.
+
 ### Team Members
 
 The team members working on this project are Eitan Tuchin and Tirmidi Mohamed.
@@ -21,10 +23,17 @@ The team members working on this project are Eitan Tuchin and Tirmidi Mohamed.
 ### Description of Dataset
 
 ```{r}
-#data <- read.csv("<csv here>")
+data <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/bad-drivers/bad-drivers.csv")
+head(data)
+summary(data)
 ```
+Our dataset contains varying statistics relating to specifically bad-drivers throughout the United States including the District of Columbia. For each state (row) there are 7 columns that contain statistics like percentage of drivers involved in fatal collisions who were impaired by alcohol use. Each metric is numerical, either being an int or a float. Most deal with the "number of" or "percentage of" drivers in that state.
 
 ### First Data Cleaning Steps
+
+```{r}
+
+```
 
 ### Marginal Summaries
 

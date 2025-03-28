@@ -361,6 +361,8 @@ display: none;
 <h2>Proposal</h2>
 <div id="research-topic" class="section level3">
 <h3>Research Topic</h3>
+<p>The topic for our research project is about bad-drivers in the
+US.</p>
 </div>
 <div id="team-members" class="section level3">
 <h3>Team Members</h3>
@@ -369,7 +371,121 @@ Mohamed.</p>
 </div>
 <div id="description-of-dataset" class="section level3">
 <h3>Description of Dataset</h3>
-<pre class="r"><code>#data &lt;- read.csv(&quot;&lt;csv here&gt;&quot;)</code></pre>
+<pre class="r"><code>data &lt;- read.csv(&quot;https://raw.githubusercontent.com/fivethirtyeight/data/master/bad-drivers/bad-drivers.csv&quot;)
+head(data)</code></pre>
+<pre><code>##        State Number.of.drivers.involved.in.fatal.collisions.per.billion.miles
+## 1    Alabama                                                             18.8
+## 2     Alaska                                                             18.1
+## 3    Arizona                                                             18.6
+## 4   Arkansas                                                             22.4
+## 5 California                                                             12.0
+## 6   Colorado                                                             13.6
+##   Percentage.Of.Drivers.Involved.In.Fatal.Collisions.Who.Were.Speeding
+## 1                                                                   39
+## 2                                                                   41
+## 3                                                                   35
+## 4                                                                   18
+## 5                                                                   35
+## 6                                                                   37
+##   Percentage.Of.Drivers.Involved.In.Fatal.Collisions.Who.Were.Alcohol.Impaired
+## 1                                                                           30
+## 2                                                                           25
+## 3                                                                           28
+## 4                                                                           26
+## 5                                                                           28
+## 6                                                                           28
+##   Percentage.Of.Drivers.Involved.In.Fatal.Collisions.Who.Were.Not.Distracted
+## 1                                                                         96
+## 2                                                                         90
+## 3                                                                         84
+## 4                                                                         94
+## 5                                                                         91
+## 6                                                                         79
+##   Percentage.Of.Drivers.Involved.In.Fatal.Collisions.Who.Had.Not.Been.Involved.In.Any.Previous.Accidents
+## 1                                                                                                     80
+## 2                                                                                                     94
+## 3                                                                                                     96
+## 4                                                                                                     95
+## 5                                                                                                     89
+## 6                                                                                                     95
+##   Car.Insurance.Premiums....
+## 1                     784.55
+## 2                    1053.48
+## 3                     899.47
+## 4                     827.34
+## 5                     878.41
+## 6                     835.50
+##   Losses.incurred.by.insurance.companies.for.collisions.per.insured.driver....
+## 1                                                                       145.08
+## 2                                                                       133.93
+## 3                                                                       110.35
+## 4                                                                       142.39
+## 5                                                                       165.63
+## 6                                                                       139.91</code></pre>
+<pre class="r"><code>summary(data)</code></pre>
+<pre><code>##     State          
+##  Length:51         
+##  Class :character  
+##  Mode  :character  
+##                    
+##                    
+##                    
+##  Number.of.drivers.involved.in.fatal.collisions.per.billion.miles
+##  Min.   : 5.90                                                   
+##  1st Qu.:12.75                                                   
+##  Median :15.60                                                   
+##  Mean   :15.79                                                   
+##  3rd Qu.:18.50                                                   
+##  Max.   :23.90                                                   
+##  Percentage.Of.Drivers.Involved.In.Fatal.Collisions.Who.Were.Speeding
+##  Min.   :13.00                                                       
+##  1st Qu.:23.00                                                       
+##  Median :34.00                                                       
+##  Mean   :31.73                                                       
+##  3rd Qu.:38.00                                                       
+##  Max.   :54.00                                                       
+##  Percentage.Of.Drivers.Involved.In.Fatal.Collisions.Who.Were.Alcohol.Impaired
+##  Min.   :16.00                                                               
+##  1st Qu.:28.00                                                               
+##  Median :30.00                                                               
+##  Mean   :30.69                                                               
+##  3rd Qu.:33.00                                                               
+##  Max.   :44.00                                                               
+##  Percentage.Of.Drivers.Involved.In.Fatal.Collisions.Who.Were.Not.Distracted
+##  Min.   : 10.00                                                            
+##  1st Qu.: 83.00                                                            
+##  Median : 88.00                                                            
+##  Mean   : 85.92                                                            
+##  3rd Qu.: 95.00                                                            
+##  Max.   :100.00                                                            
+##  Percentage.Of.Drivers.Involved.In.Fatal.Collisions.Who.Had.Not.Been.Involved.In.Any.Previous.Accidents
+##  Min.   : 76.00                                                                                        
+##  1st Qu.: 83.50                                                                                        
+##  Median : 88.00                                                                                        
+##  Mean   : 88.73                                                                                        
+##  3rd Qu.: 95.00                                                                                        
+##  Max.   :100.00                                                                                        
+##  Car.Insurance.Premiums....
+##  Min.   : 642.0            
+##  1st Qu.: 768.4            
+##  Median : 859.0            
+##  Mean   : 887.0            
+##  3rd Qu.:1007.9            
+##  Max.   :1301.5            
+##  Losses.incurred.by.insurance.companies.for.collisions.per.insured.driver....
+##  Min.   : 82.75                                                              
+##  1st Qu.:114.64                                                              
+##  Median :136.05                                                              
+##  Mean   :134.49                                                              
+##  3rd Qu.:151.87                                                              
+##  Max.   :194.78</code></pre>
+<p>Our dataset contains varying statistics relating to specifically
+bad-drivers throughout the United States including the District of
+Columbia. For each state (row) there are 7 columns that contain
+statistics like percentage of drivers involved in fatal collisions who
+were impaired by alcohol use. Each metric is numerical, either being an
+int or a float. Most deal with the “number of” or “percentage of”
+drivers in that state.</p>
 </div>
 <div id="first-data-cleaning-steps" class="section level3">
 <h3>First Data Cleaning Steps</h3>
