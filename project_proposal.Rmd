@@ -32,9 +32,61 @@ Our dataset contains varying statistics relating to specifically bad-drivers thr
 ### First Data Cleaning Steps
 
 ```{r}
+# check for missing values
+missing_values <- colSums(is.na(data))
+print("Missing values per column:")
+print(missing_values)
+
+# rename columns for simplicity
+colnames(data) <- c("State", "Fatal_Collisions_Per_Billion", "Percent_Speeding", 
+                    "Percent_Alcohol", "Percent_Not_Distracted", "Percent_No_Prior", 
+                    "Insurance_Premiums", "Losses_Per_Driver")
+
+str(data)
+
+# convert State to factor 
+data$State <- as.factor(data$State)
+numeric_cols <- c("Fatal_Collisions_Per_Billion", "Percent_Speeding", "Percent_Alcohol", 
+                  "Percent_Not_Distracted", "Percent_No_Prior", "Insurance_Premiums", 
+                  "Losses_Per_Driver")
+data[numeric_cols] <- lapply(data[numeric_cols], as.numeric)
+
+# check for duplicate rows
+duplicates <- duplicated(data)
+print("Number of duplicate rows:")
+print(sum(duplicates))
+
+head(data)
+summary(data)
 
 ```
 
 ### Marginal Summaries
+
+```{r}
+# convert numeric columns to numeric type (just in case)
+numeric_cols <- c("Fatal_Collisions_Per_Billion", "Percent_Speeding", "Percent_Alcohol", 
+                  "Percent_Not_Distracted", "Percent_No_Prior", "Insurance_Premiums", 
+                  "Losses_Per_Driver")
+data[numeric_cols] <- lapply(data[numeric_cols], as.numeric)
+
+print("Basic Marginal Summaries:")
+lapply(data[numeric_cols], summary)
+
+marginal_summaries <- data.frame(
+  Variable = numeric_cols,
+  Mean = sapply(data[numeric_cols], mean, na.rm = TRUE),
+  Median = sapply(data[numeric_cols], median, na.rm = TRUE),
+  Std_Dev = sapply(data[numeric_cols], sd, na.rm = TRUE),
+  Min = sapply(data[numeric_cols], min, na.rm = TRUE),
+  Max = sapply(data[numeric_cols], max, na.rm = TRUE)
+)
+
+# round the results for readability
+marginal_summaries[, 2:6] <- round(marginal_summaries[, 2:6], 2)
+
+print("Custom Marginal Summaries:")
+print(marginal_summaries)
+```
 
 ### Project Idea (Questions we Are Answering)

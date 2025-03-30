@@ -489,9 +489,157 @@ drivers in that state.</p>
 </div>
 <div id="first-data-cleaning-steps" class="section level3">
 <h3>First Data Cleaning Steps</h3>
+<pre class="r"><code># check for missing values
+missing_values &lt;- colSums(is.na(data))
+print(&quot;Missing values per column:&quot;)</code></pre>
+<pre><code>## [1] &quot;Missing values per column:&quot;</code></pre>
+<pre class="r"><code>print(missing_values)</code></pre>
+<pre><code>##                                                                                                  State 
+##                                                                                                      0 
+##                                       Number.of.drivers.involved.in.fatal.collisions.per.billion.miles 
+##                                                                                                      0 
+##                                   Percentage.Of.Drivers.Involved.In.Fatal.Collisions.Who.Were.Speeding 
+##                                                                                                      0 
+##                           Percentage.Of.Drivers.Involved.In.Fatal.Collisions.Who.Were.Alcohol.Impaired 
+##                                                                                                      0 
+##                             Percentage.Of.Drivers.Involved.In.Fatal.Collisions.Who.Were.Not.Distracted 
+##                                                                                                      0 
+## Percentage.Of.Drivers.Involved.In.Fatal.Collisions.Who.Had.Not.Been.Involved.In.Any.Previous.Accidents 
+##                                                                                                      0 
+##                                                                             Car.Insurance.Premiums.... 
+##                                                                                                      0 
+##                           Losses.incurred.by.insurance.companies.for.collisions.per.insured.driver.... 
+##                                                                                                      0</code></pre>
+<pre class="r"><code># rename columns for simplicity
+colnames(data) &lt;- c(&quot;State&quot;, &quot;Fatal_Collisions_Per_Billion&quot;, &quot;Percent_Speeding&quot;, 
+                    &quot;Percent_Alcohol&quot;, &quot;Percent_Not_Distracted&quot;, &quot;Percent_No_Prior&quot;, 
+                    &quot;Insurance_Premiums&quot;, &quot;Losses_Per_Driver&quot;)
+
+str(data)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    51 obs. of  8 variables:
+##  $ State                       : chr  &quot;Alabama&quot; &quot;Alaska&quot; &quot;Arizona&quot; &quot;Arkansas&quot; ...
+##  $ Fatal_Collisions_Per_Billion: num  18.8 18.1 18.6 22.4 12 13.6 10.8 16.2 5.9 17.9 ...
+##  $ Percent_Speeding            : int  39 41 35 18 35 37 46 38 34 21 ...
+##  $ Percent_Alcohol             : int  30 25 28 26 28 28 36 30 27 29 ...
+##  $ Percent_Not_Distracted      : int  96 90 84 94 91 79 87 87 100 92 ...
+##  $ Percent_No_Prior            : int  80 94 96 95 89 95 82 99 100 94 ...
+##  $ Insurance_Premiums          : num  785 1053 899 827 878 ...
+##  $ Losses_Per_Driver           : num  145 134 110 142 166 ...</code></pre>
+<pre class="r"><code># convert State to factor 
+data$State &lt;- as.factor(data$State)
+numeric_cols &lt;- c(&quot;Fatal_Collisions_Per_Billion&quot;, &quot;Percent_Speeding&quot;, &quot;Percent_Alcohol&quot;, 
+                  &quot;Percent_Not_Distracted&quot;, &quot;Percent_No_Prior&quot;, &quot;Insurance_Premiums&quot;, 
+                  &quot;Losses_Per_Driver&quot;)
+data[numeric_cols] &lt;- lapply(data[numeric_cols], as.numeric)
+
+# check for duplicate rows
+duplicates &lt;- duplicated(data)
+print(&quot;Number of duplicate rows:&quot;)</code></pre>
+<pre><code>## [1] &quot;Number of duplicate rows:&quot;</code></pre>
+<pre class="r"><code>print(sum(duplicates))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code>head(data)</code></pre>
+<pre><code>##        State Fatal_Collisions_Per_Billion Percent_Speeding Percent_Alcohol
+## 1    Alabama                         18.8               39              30
+## 2     Alaska                         18.1               41              25
+## 3    Arizona                         18.6               35              28
+## 4   Arkansas                         22.4               18              26
+## 5 California                         12.0               35              28
+## 6   Colorado                         13.6               37              28
+##   Percent_Not_Distracted Percent_No_Prior Insurance_Premiums Losses_Per_Driver
+## 1                     96               80             784.55            145.08
+## 2                     90               94            1053.48            133.93
+## 3                     84               96             899.47            110.35
+## 4                     94               95             827.34            142.39
+## 5                     91               89             878.41            165.63
+## 6                     79               95             835.50            139.91</code></pre>
+<pre class="r"><code>summary(data)</code></pre>
+<pre><code>##         State    Fatal_Collisions_Per_Billion Percent_Speeding Percent_Alcohol
+##  Alabama   : 1   Min.   : 5.90                Min.   :13.00    Min.   :16.00  
+##  Alaska    : 1   1st Qu.:12.75                1st Qu.:23.00    1st Qu.:28.00  
+##  Arizona   : 1   Median :15.60                Median :34.00    Median :30.00  
+##  Arkansas  : 1   Mean   :15.79                Mean   :31.73    Mean   :30.69  
+##  California: 1   3rd Qu.:18.50                3rd Qu.:38.00    3rd Qu.:33.00  
+##  Colorado  : 1   Max.   :23.90                Max.   :54.00    Max.   :44.00  
+##  (Other)   :45                                                                
+##  Percent_Not_Distracted Percent_No_Prior Insurance_Premiums Losses_Per_Driver
+##  Min.   : 10.00         Min.   : 76.00   Min.   : 642.0     Min.   : 82.75   
+##  1st Qu.: 83.00         1st Qu.: 83.50   1st Qu.: 768.4     1st Qu.:114.64   
+##  Median : 88.00         Median : 88.00   Median : 859.0     Median :136.05   
+##  Mean   : 85.92         Mean   : 88.73   Mean   : 887.0     Mean   :134.49   
+##  3rd Qu.: 95.00         3rd Qu.: 95.00   3rd Qu.:1007.9     3rd Qu.:151.87   
+##  Max.   :100.00         Max.   :100.00   Max.   :1301.5     Max.   :194.78   
+## </code></pre>
 </div>
 <div id="marginal-summaries" class="section level3">
 <h3>Marginal Summaries</h3>
+<pre class="r"><code># convert numeric columns to numeric type (just in case)
+numeric_cols &lt;- c(&quot;Fatal_Collisions_Per_Billion&quot;, &quot;Percent_Speeding&quot;, &quot;Percent_Alcohol&quot;, 
+                  &quot;Percent_Not_Distracted&quot;, &quot;Percent_No_Prior&quot;, &quot;Insurance_Premiums&quot;, 
+                  &quot;Losses_Per_Driver&quot;)
+data[numeric_cols] &lt;- lapply(data[numeric_cols], as.numeric)
+
+print(&quot;Basic Marginal Summaries:&quot;)</code></pre>
+<pre><code>## [1] &quot;Basic Marginal Summaries:&quot;</code></pre>
+<pre class="r"><code>lapply(data[numeric_cols], summary)</code></pre>
+<pre><code>## $Fatal_Collisions_Per_Billion
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##    5.90   12.75   15.60   15.79   18.50   23.90 
+## 
+## $Percent_Speeding
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##   13.00   23.00   34.00   31.73   38.00   54.00 
+## 
+## $Percent_Alcohol
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##   16.00   28.00   30.00   30.69   33.00   44.00 
+## 
+## $Percent_Not_Distracted
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##   10.00   83.00   88.00   85.92   95.00  100.00 
+## 
+## $Percent_No_Prior
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##   76.00   83.50   88.00   88.73   95.00  100.00 
+## 
+## $Insurance_Premiums
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##   642.0   768.4   859.0   887.0  1007.9  1301.5 
+## 
+## $Losses_Per_Driver
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##   82.75  114.64  136.05  134.49  151.87  194.78</code></pre>
+<pre class="r"><code>marginal_summaries &lt;- data.frame(
+  Variable = numeric_cols,
+  Mean = sapply(data[numeric_cols], mean, na.rm = TRUE),
+  Median = sapply(data[numeric_cols], median, na.rm = TRUE),
+  Std_Dev = sapply(data[numeric_cols], sd, na.rm = TRUE),
+  Min = sapply(data[numeric_cols], min, na.rm = TRUE),
+  Max = sapply(data[numeric_cols], max, na.rm = TRUE)
+)
+
+# round the results for readability
+marginal_summaries[, 2:6] &lt;- round(marginal_summaries[, 2:6], 2)
+
+print(&quot;Custom Marginal Summaries:&quot;)</code></pre>
+<pre><code>## [1] &quot;Custom Marginal Summaries:&quot;</code></pre>
+<pre class="r"><code>print(marginal_summaries)</code></pre>
+<pre><code>##                                                  Variable   Mean Median Std_Dev
+## Fatal_Collisions_Per_Billion Fatal_Collisions_Per_Billion  15.79  15.60    4.12
+## Percent_Speeding                         Percent_Speeding  31.73  34.00    9.63
+## Percent_Alcohol                           Percent_Alcohol  30.69  30.00    5.13
+## Percent_Not_Distracted             Percent_Not_Distracted  85.92  88.00   15.16
+## Percent_No_Prior                         Percent_No_Prior  88.73  88.00    6.96
+## Insurance_Premiums                     Insurance_Premiums 886.96 858.97  178.30
+## Losses_Per_Driver                       Losses_Per_Driver 134.49 136.05   24.84
+##                                 Min     Max
+## Fatal_Collisions_Per_Billion   5.90   23.90
+## Percent_Speeding              13.00   54.00
+## Percent_Alcohol               16.00   44.00
+## Percent_Not_Distracted        10.00  100.00
+## Percent_No_Prior              76.00  100.00
+## Insurance_Premiums           641.96 1301.52
+## Losses_Per_Driver             82.75  194.78</code></pre>
 </div>
 <div id="project-idea-questions-we-are-answering" class="section level3">
 <h3>Project Idea (Questions we Are Answering)</h3>
