@@ -23,9 +23,80 @@ To achieve our project's goal we will answer the following questions:
 These will be the main questions that we try and answer throughout our work on this project. We hope to get to some meaningful conclusions about bad drivers and their common trends in the United States.
 
 ## Data
+### Structure
+
+The link to our dataset is https://github.com/fivethirtyeight/data/blob/master/bad-drivers/bad-drivers.csv. The github link points to a csv file under a repository. Our dataset contains varying statistics relating to specifically bad-drivers throughout the United States including the District of Columbia. For each state (row) there are 7 columns that contain statistics like percentage of drivers involved in fatal collisions who were impaired by alcohol use. Each metric is numerical, either being an int or a float. Most deal with the "number of" or "percentage of" drivers in that state.
+
+Overall our dataset is pretty simple and it contains all of the data we need for answering our questions. 
+
+### Cleaning
+
+The first thing we need to do is read in the csv file and take a look at it:
+
+```{r}
+data <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/bad-drivers/bad-drivers.csv")
+summary(data)
+head(data)
+```
+
+The first thing we did cleaning wise was check for missing values in our data by iterating over every column in our data and checking if the value was NA or not. Then we removed any columns with missing values.
+
+```{r}
+missing_values <- colSums(is.na(data))
+print("Missing values per column:")
+print(missing_values)
+data <- data[, colSums(is.na(data)) == 0]  
+print("Columns after removing those with NAs:")
+print(names(data))
+```
+
+Then, for simplicity sake, we wanted to rename some of the columns in our data because they weren't as data explorable and accessible friendly. For example, we have a column named "Number of drivers involved in fatal collisions per billion miles" which would be annoying to access since it's separated by white-space and very long. We also checked to see if we got the intended result.
+
+```{r}
+colnames(data) <- c("State", "Fatal_Collisions_Per_Billion", "Percent_Speeding", 
+                    "Percent_Alcohol", "Percent_Not_Distracted", "Percent_No_Prior", 
+                    "Insurance_Premiums", "Losses_Per_Driver")
+str(data)
+```
+
+Since we are going to be doing some statistical modeling later to answer our question we decided to turn the State column into a factor type from a String. Then we grabbed all the columns that contained numeric data and stored them. We then ensured that these specified columns are treated as numbers and not anything else. Now we have easy data to work with.
+
+```{r}
+data$State <- as.factor(data$State)
+numeric_cols <- c("Fatal_Collisions_Per_Billion", "Percent_Speeding", "Percent_Alcohol", 
+                  "Percent_Not_Distracted", "Percent_No_Prior", "Insurance_Premiums", 
+                  "Losses_Per_Driver")
+data[numeric_cols] <- lapply(data[numeric_cols], as.numeric)
+```
+
+Lastly, we need to check if we have any duplicate rows in our data. Then we removed those rows from the data.
+
+```{r}
+duplicates <- duplicated(data)
+print("Number of duplicate rows:")
+print(sum(duplicates))
+
+data <- data[!duplicates, ]  
+
+print("Final cleaned data:")
+head(data)
+summary(data)
+```
+
+After cleaning our data it's ready to be analyzed and interpreted.
+
+### Variables
+
+Here we list all of the variables (columns) in our dataset:
+
+*
+*
+*
+*
+*
 
 ## Results
-```{r, warning=FALSE,message=FALSE}
+```{r}
 library(readr)
 library(tidyverse)
 ```
