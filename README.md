@@ -359,6 +359,17 @@ library(reshape2)
     ## 
     ##     smiths
 
+``` r
+library(gridExtra)
+```
+
+    ## 
+    ## Attaching package: 'gridExtra'
+    ## 
+    ## The following object is masked from 'package:dplyr':
+    ## 
+    ##     combine
+
 ### Can we identify regional patterns in bad driving behaviors like speeding and alcohol impairment, and how do these align with fatal collision rates?
 
 ``` r
@@ -389,88 +400,73 @@ data <- data %>%
     TRUE ~ NA_character_
   ))
 
-division_summary <- data %>%
-  group_by(Division) %>%
-  summarise(
-    Avg_Percent_Speeding = mean(Percent_Speeding, na.rm = TRUE),
-    Avg_Percent_Alcohol = mean(Percent_Alcohol, na.rm = TRUE),
-    Avg_Fatal_Collisions = mean(Fatal_Collisions_Per_Billion, na.rm = TRUE)
-  )
 
-print("Division Summary:")
+speed_alcohol_collisions <- data %>%
+  select(State, Fatal_Collisions_Per_Billion, Percent_Speeding, Percent_Alcohol, Division) %>%
+  pivot_longer(cols = c("Percent_Speeding", "Percent_Alcohol"),
+               names_to = "Behavior",
+               values_to = "Percentage")
 ```
 
-    ## [1] "Division Summary:"
+To begin answering this question we grouped all of the states into 9
+different U.S regional divisions. Then we reshaped the data to make it
+easier to plot.
 
 ``` r
-print(division_summary)
+# Scatter plot of Fatal Collisions vs. Speeding, colored by Division
+plot_speeding <- ggplot(speed_alcohol_collisions %>% filter(Behavior == "Percent_Speeding"),
+                        aes(x = Percentage, y = Fatal_Collisions_Per_Billion, color = Division)) +
+  geom_point(size = 3) + 
+  geom_smooth(method = 'lm', se = FALSE) +
+  labs(title = "Fatal Collisions vs. Percentage of Speeding Drivers",
+       x = "Percentage of Speeding Drivers",
+       y = "Fatal Collisions per Billion Miles",
+       color = "US Division") +
+  theme_minimal(base_size = 12) 
 ```
-
-    ## # A tibble: 9 × 4
-    ##   Division         Avg_Percent_Speeding Avg_Percent_Alcohol Avg_Fatal_Collisions
-    ##   <chr>                           <dbl>               <dbl>                <dbl>
-    ## 1 East North Cent…                 29.8                31.6                 13.9
-    ## 2 East South Cent…                 23.5                28.2                 19.3
-    ## 3 Middle Atlantic                  32.7                29.3                 13.9
-    ## 4 Mountain                         36                  29.5                 16.3
-    ## 5 New England                      34.3                33.2                 11.7
-    ## 6 Pacific                          41                  30.6                 14.2
-    ## 7 South Atlantic                   30.7                30                   16.1
-    ## 8 West North Cent…                 25.3                31.7                 16.8
-    ## 9 West South Cent…                 31.2                31.5                 20.5
 
 ``` r
-# Reshape data for heatmap
-heatmap_data <- division_summary %>%
-  select(Division, Avg_Percent_Speeding, Avg_Percent_Alcohol, Avg_Fatal_Collisions) %>%
-  melt(id.vars = "Division")
+# Scatter plot of Fatal Collisions vs. Alcohol Impairment, colored by Division
+plot_alcohol <- ggplot(speed_alcohol_collisions %>% filter(Behavior == "Percent_Alcohol"),
+                         aes(x = Percentage, y = Fatal_Collisions_Per_Billion, color = Division)) +
+  geom_point(size = 3) + 
+  geom_smooth(method = 'lm', se = FALSE) +
+  labs(title = "Fatal Collisions vs. Percentage of Alcohol-Impaired Drivers",
+       x = "Percentage of Alcohol-Impaired Drivers",
+       y = "Fatal Collisions per Billion Miles",
+       color = "US Division") +
+  theme_minimal(base_size = 12)
 
-# Plot
-ggplot(heatmap_data, aes(x = variable, y = Division, fill = value)) +
-  geom_tile(color = "white") +
-  scale_fill_gradient(low = "lightyellow", high = "red", name = "Average Value") +
-  labs(
-    title = "Regional Patterns: Speeding, Alcohol, and Fatal Collisions",
-    subtitle = "Darker shades indicate higher values",
-    x = "Metric",
-    y = "Region"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+grid.arrange(plot_speeding, plot_alcohol, ncol = 1)
 ```
-
-![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
-
-``` r
-ggplot(data, aes(x = Percent_Alcohol, y = Percent_Speeding, 
-                 size = Fatal_Collisions_Per_Billion, color = Division)) +
-  geom_point(alpha = 0.7) +
-  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed") +
-  scale_size_continuous(name = "Fatal Collisions\n(per billion miles)") +
-  labs(
-    title = "Alcohol vs. Speeding in Fatal Collisions",
-    subtitle = "Point size = Fatal collision rate; Color = Region",
-    x = "Alcohol-Impaired Drivers (%)",
-    y = "Speeding Drivers (%)"
-  ) +
-  theme_minimal()
-```
-
-    ## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
-    ## ℹ Please use `linewidth` instead.
-    ## This warning is displayed once every 8 hours.
-    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-    ## generated.
 
     ## `geom_smooth()` using formula = 'y ~ x'
+    ## `geom_smooth()` using formula = 'y ~ x'
 
-    ## Warning: The following aesthetics were dropped during statistical transformation: size.
-    ## ℹ This can happen when ggplot fails to infer the correct grouping structure in
-    ##   the data.
-    ## ℹ Did you forget to specify a `group` aesthetic or to convert a numerical
-    ##   variable into a factor?
+![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
-![](README_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
+The first plot we made shows the correlation between fatal collisions
+and drivers who were speeding while the second plot shows the
+correlation betweeen fatal collisions and drivers who were impaired by
+alcohol consumption. We decided to use a scatterplot with a line of best
+fit for each region because it displays the correlation for both
+speeding and alcohol columns to fatal collisions for each state and the
+average for the entire region. In the first plot there appears to be 6
+positively correlated divisions and 3 negatively correlated divisions.
+For the second plot there are 5 positively correlated divisions and 4
+negatively correlated divisions. Overall then we see that there is more
+of correlation between more fatal collisions due to alcohol and speeding
+throughout all the regions in the United States as we expected. We did
+also find some regional patterns. 1, there is no strong correlation
+between alcohol use and more fatal collisions on the East coast. 2,
+there is no strong correlation between speeding and more fatal
+collisions in Western United states. Conversely, there is a strong
+correlation between alcohol and fatal collisions in Western United
+States. There is also a strong correlation between speeding and fatal
+collisions on the coasts of the United States. So we can conclusively
+say that alcohol and speeding lead to more collisions and regional
+patterns do exist throughout the United States but the reason to why
+this is is beyond the scope of our project.
 
 ### Are there states where the percentage of speeding-related fatal collisions significantly deviates from the national average, and what state-specific factors (e.g., speed limits, road conditions) might explain this?
 
