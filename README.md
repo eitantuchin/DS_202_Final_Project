@@ -1,43 +1,39 @@
 
 # Analysis on Fatal Motor Vehicle Accidents in the United States
 
-#### Marissa Baietto, Ryan Dorle, Braeden Collings
+#### Eitan Tuchin, Tirmidi Mohamed
 
 ## Introduction
 
-The goal of the project is to explore multiple datasets to better
-understand fatal vehicle crashes. Unfortunately, fatal car crashes have
-become increasingly prevalent due to the high volume of drivers in the
-United States. Analysis on this topic can lead to increased awareness,
-more effective policing efforts, and identification of common trends for
-accidents. Ultimately, our goal is to understand the circumstances in
-which individuals get into vehicular accidents.
+The goal of our project is to explore data about bad drivers in the
+United States so that we can better understand causes of fatal car
+crashes and point out common characteristics about bad drivers. Since
+driving is such a common activity that we as humans do on a day-to-day
+basis it becomes imperative to analyze times at when driving has gone
+wrong in the name of trying to reduce the risk for these dangerous
+situations. We hope that our exploration and the analysis of the data we
+looked at will lead to more effective driving policies throughout
+America and an altogether smaller fatalities reported in later data.
 
-In pursuit of the stated goal, we will explore the following questions:
+To achieve our project’s goal we will answer the following questions:
 
-1.  When are crashes most likely? Are there any seasonal effects, and
-    are night crashes more likely than in the morning or afternoon?
+1.  Can we identify regional patterns (e.g., Northeast, South, Midwest,
+    West) in bad driving behaviors like speeding and alcohol impairment,
+    and how do these align with fatal collision rates?
 
-2.  How is speeding related to the number of fatalities? Are younger
-    drivers more prone to speeding? Is higher speeding limits associated
-    with more fatalities?
+2.  Are there states where the percentage of speeding-related fatal
+    collisions significantly deviates from the national average, and
+    what state-specific factors (e.g., speed limits, road conditions)
+    might explain this?
 
-3.  Does impairment affect fatality in crashes overall? When are
-    impaired crashes most likely?
+3.  How well can a predictive model (e.g., linear regression) use
+    percentages of speeding, alcohol impairment, and distraction to
+    estimate fatal collisions per billion miles, and which factor is
+    most influential?
 
-4.  What regions of the United States have the most fatal crashes? What
-    conditions are present in those regions?
-
-5.  How does the demographics of the driver affect crashes? Are changes
-    based on occupants more prevalent for younger drivers?
-
-6.  Are crashes affected by lighting and road conditions? How so, and
-    what conditions are most impact?
-
-These are the main questions we are looking to answer through the
-completion of this project. With the findings we will be able to draw
-meaningful conclusions on fatal car crashes throughout the United
-States.
+These will be the main questions that we try and answer throughout our
+work on this project. We hope to get to some meaningful conclusions
+about bad drivers and their common trends in the United States.
 
 ## Data
 
