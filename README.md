@@ -470,6 +470,257 @@ this is is beyond the scope of our project.
 
 ### Are there states where the percentage of speeding-related fatal collisions significantly deviates from the national average, and what state-specific factors (e.g., speed limits, road conditions) might explain this?
 
-### How well can a predictive model (e.g., linear regression) use percentages of speeding, alcohol impairment, and distraction to estimate fatal collisions per billion miles, and which factor is most influential?
+To explore states with unusual speeding-related fatality percentages, we
+first calculated the national average and standard deviation for the
+`Percent_Speeding` column. We used these values to determine how many
+standard deviations each state’s percentage lies away from the national
+mean. This helps us identify states that are statistical outliers.
+
+``` r
+# Calculate national average and standard deviation for speeding percentage
+national_avg_speeding <- mean(data$Percent_Speeding, na.rm = TRUE)
+national_sd_speeding <- sd(data$Percent_Speeding, na.rm = TRUE)
+
+# Print the national average and SD
+print(paste("National Average Percentage Speeding:", round(national_avg_speeding, 2)))
+```
+
+    ## [1] "National Average Percentage Speeding: 31.73"
+
+``` r
+print(paste("National Standard Deviation Percentage Speeding:", round(national_sd_speeding, 2)))
+```
+
+    ## [1] "National Standard Deviation Percentage Speeding: 9.63"
+
+``` r
+# Add deviation in SD units to the data frame
+data <- data %>%
+  mutate(Speeding_Deviation_SD = (Percent_Speeding - national_avg_speeding) / national_sd_speeding)
+
+# Identify states deviating significantly (e.g., more than 1.5 SD from the mean)
+significant_deviators <- data %>%
+  filter(abs(Speeding_Deviation_SD) > 1.5) %>%
+  arrange(desc(Speeding_Deviation_SD))
+
+print("States with speeding percentages > 1.5 SD from national average:")
+```
+
+    ## [1] "States with speeding percentages > 1.5 SD from national average:"
+
+``` r
+print(significant_deviators %>% select(State, Percent_Speeding, Speeding_Deviation_SD))
+```
+
+    ##          State Percent_Speeding Speeding_Deviation_SD
+    ## 1       Hawaii               54              2.312208
+    ## 2 Pennsylvania               50              1.896987
+    ## 3         Iowa               17             -1.528581
+    ## 4   New Jersey               16             -1.632386
+    ## 5  Mississippi               15             -1.736191
+    ## 6     Nebraska               13             -1.943801
+
+We then visualize the percentage of speeding-related fatal collisions
+for all states, highlighting the national average. This allows for easy
+comparison and identification of states at the extremes.
+
+``` r
+# Plot Percentage Speeding by State, ordered, with national average line
+plot_speeding_states <- ggplot(data, aes(x = reorder(State, Percent_Speeding), y = Percent_Speeding)) +
+  geom_col(aes(fill = Speeding_Deviation_SD > 1.5 | Speeding_Deviation_SD < -1.5)) + # Highlight significant deviators
+  geom_hline(yintercept = national_avg_speeding, color = "red", linetype = "dashed") +
+  scale_fill_manual(values = c("grey", "orange"), name = "Deviation > 1.5 SD") +
+  coord_flip() + # Flip coordinates for better state label readability
+  labs(title = "Percentage of Speeding-Related Fatal Collisions by State",
+       x = "State",
+       y = "Percentage of Drivers Speeding in Fatal Collisions",
+       caption = "Red dashed line indicates the national average.") +
+  theme_minimal(base_size = 11) +
+  theme(axis.text.y = element_text(size = 8)) # Adjust y-axis text size if needed
+
+print(plot_speeding_states)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+The plot reveals considerable variation across states. States like
+Hawaii and Pennsylvania stand out with significantly higher percentages
+of speeding-related fatal collisions compared to the national average
+(indicated in orange). Conversely, states like Mississippi and Nebraska
+show significantly lower percentages.
+
+While our dataset doesn’t include direct state-specific factors to
+definitively explain these deviations, potential contributing factors
+could include: \* **Speed Limits:** States with higher maximum speed
+limits might see more speeding, although the relationship with *fatal*
+speeding crashes could be complex. \* **Road Infrastructure:**
+Differences in highway quality, urban vs. rural road mileage, and
+topography. \* **Traffic Enforcement:** Varying levels of speed limit
+enforcement and penalties. \* **Driving Culture & Demographics:**
+Differences in local driving norms, population density, and age
+distribution of drivers. \* **Weather Conditions:** States with more
+adverse weather might see different patterns, potentially reducing
+speeds overall but increasing risk when speeding does occur.
+
+Further analysis incorporating these external factors would be needed
+for a more conclusive explanation. \### How well can a predictive model
+(e.g., linear regression) use percentages of speeding, alcohol
+impairment, and distraction to estimate fatal collisions per billion
+miles, and which factor is most influential?
+
+To assess the predictive power of key behavioral factors on fatal
+collision rates, we constructed a multiple linear regression model. The
+model aims to predict `Fatal_Collisions_Per_Billion` using
+`Percent_Speeding`, `Percent_Alcohol`, and `Percent_Not_Distracted` as
+predictor variables. It’s important to remember that
+`Percent_Not_Distracted` represents drivers who were *not* distracted; a
+higher value implies less distraction was involved in fatal crashes, so
+we might expect it to have a negative relationship with the overall
+fatal collision rate.
+
+``` r
+# Build the linear regression model using the cleaned data
+collision_model <- lm(Fatal_Collisions_Per_Billion ~ Percent_Speeding + Percent_Alcohol + Percent_Not_Distracted, data = data)
+
+# Display the model summary which contains coefficients, p-values, R-squared, etc.
+summary(collision_model)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = Fatal_Collisions_Per_Billion ~ Percent_Speeding + 
+    ##     Percent_Alcohol + Percent_Not_Distracted, data = data)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -9.1756 -2.7166  0.1476  3.0918  8.5530 
+    ## 
+    ## Coefficients:
+    ##                         Estimate Std. Error t value Pr(>|t|)  
+    ## (Intercept)            11.217947   4.802147   2.336   0.0238 *
+    ## Percent_Speeding       -0.040857   0.064056  -0.638   0.5267  
+    ## Percent_Alcohol         0.181687   0.119300   1.523   0.1345  
+    ## Percent_Not_Distracted  0.003412   0.039040   0.087   0.9307  
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 4.148 on 47 degrees of freedom
+    ## Multiple R-squared:  0.04801,    Adjusted R-squared:  -0.01275 
+    ## F-statistic: 0.7901 on 3 and 47 DF,  p-value: 0.5055
+
+**Interpretation of the Model:**
+
+The model summary provides insights into how well these factors
+collectively predict fatal collisions and the individual influence of
+each factor.
+
+- **Model Fit (“How well?”):** The R-squared value tells us the
+  proportion of variance in `Fatal_Collisions_Per_Billion` that is
+  explained by the three predictors combined. The **Adjusted R-squared
+  value is -0.01275**. An adjusted R-squared this low (essentially zero,
+  and even slightly negative) indicates that the model has **no
+  explanatory power**. It means that these three factors, combined in
+  this linear model, do not explain the variation in fatal collisions
+  per billion miles across states any better than simply guessing the
+  average rate. The overall F-statistic p-value of 0.5055 further
+  confirms that the model as a whole is not statistically significant.
+
+- **Factor Influence (“Which factor is most influential?”):** We examine
+  the coefficients and their corresponding p-values (the `Estimate` and
+  `Pr(>|t|)` columns in the summary table) to determine the significance
+  and influence of each predictor:
+
+  - `Percent_Speeding`: The coefficient is -0.040857 with a p-value of
+    0.5267. Based on the p-value (which is much greater than the
+    standard 0.05 threshold), this factor is **not statistically
+    significant** in predicting fatal collisions within this model.
+  - `Percent_Alcohol`: The coefficient is 0.181687 with a p-value of
+    0.1345. Based on the p-value (which is greater than 0.05), this
+    factor is also **not statistically significant**. While the
+    coefficient is positive (suggesting a potential positive
+    association), the evidence is not strong enough to conclude a
+    reliable relationship exists in this dataset.
+  - `Percent_Not_Distracted`: The coefficient is 0.003412 with a p-value
+    of 0.9307. This factor is also **not statistically significant**.
+    The coefficient is very close to zero and the p-value is very high,
+    indicating no detectable relationship between the percentage of
+    non-distracted drivers in fatal crashes and the overall fatal
+    collision rate in this model.
+
+- **Most Influential Factor:** Since **none** of the predictors
+  (`Percent_Speeding`, `Percent_Alcohol`, `Percent_Not_Distracted`) were
+  found to be statistically significant (all p-values \> 0.05), **we
+  cannot identify a ‘most influential’ factor based on this linear
+  model**. The model fails to establish a statistically reliable link
+  between these specific behavioral percentages and the rate of fatal
+  collisions per billion miles across states.
+
+In summary, the linear model attempted here performs very poorly
+(Adjusted R-squared ≈ -0.013) and does not provide statistically
+significant evidence that the state-level percentages of speeding,
+alcohol impairment, or non-distraction (as measured in this dataset) are
+reliable predictors of the overall fatal collision rate per billion
+miles. There might be more complex relationships, issues with the data
+aggregation at the state level, or other unmeasured factors that are
+more important.
 
 ## Conclusion
+
+Our goal in this project was to use state-level data to get a clearer
+picture of bad driving behaviors in the United States, specifically
+looking at speeding and alcohol impairment and how they connect to fatal
+crash rates. We explored regional differences, looked for states that
+stood out, and tested whether common factors could predict fatal
+collisions per billion miles. While our analysis provided some useful
+insights, it also clearly showed the challenges of working with
+state-level aggregated data for a complex issue like traffic safety.
+
+Looking at regional patterns (Question 1), we did see that, generally,
+higher rates of speeding and alcohol impairment tend to go along with
+higher fatal collision rates, as one might expect. However, this wasn’t
+consistent across all regions. We noticed distinct variations—for
+example, the link between alcohol and fatalities seemed less pronounced
+on the East Coast compared to the West. This suggests that regional
+context matters, and factors not included in our dataset likely play a
+significant role.
+
+In Question 2, we successfully pinpointed states where the percentage of
+speeding drivers in fatal crashes was significantly different from the
+national average. Hawaii and Pennsylvania, for instance, were notably
+higher, while Mississippi and Nebraska were lower. This confirms that
+driving safety issues related to speeding vary considerably from state
+to state. Although we could speculate about reasons like different speed
+limits, road types, or enforcement levels, our data didn’t allow us to
+definitively explain why these states stand out.
+
+The results from Question 3 were particularly revealing. Our attempt to
+predict fatal collisions per billion miles using a standard linear
+regression model with state percentages for speeding, alcohol
+impairment, and non-distraction was unsuccessful. The model had
+virtually no predictive power (Adjusted R² ≈ -0.013), and critically,
+none of these factors turned out to be statistically significant
+predictors of the fatal collision rate at the state level. This
+important finding doesn’t mean these behaviors aren’t dangerous, but
+rather that using these specific state-wide average percentages in a
+simple linear model isn’t enough to reliably predict the overall fatal
+collision rate across states.
+
+Taken together, our findings illustrate that while state-level data can
+reveal broad patterns and identify outliers, predicting fatal crash
+rates is complex. The factors involved likely interact in ways that
+aren’t captured well by state averages or simple linear relationships.
+Key limitations we faced include the nature of aggregated data (state
+averages might hide important local variations), the absence of data on
+crucial factors like traffic enforcement intensity, specific road
+conditions, or detailed driver information, and the constraints of the
+linear model we applied.
+
+For future work, exploring this topic with more granular data—perhaps at
+the county level or using individual crash records—could be more
+fruitful. Incorporating a wider array of variables and potentially
+employing more advanced modeling techniques might also uncover
+relationships missed here. Despite the predictive limitations found in
+our analysis, the variations observed across states and regions
+reinforce the ongoing importance of addressing dangerous driving
+behaviors like speeding and alcohol impairment through targeted safety
+efforts nationwide.
