@@ -6,7 +6,7 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Analysis on Fatal Motor Vehicle Accidents in the United States
+# Analysis on Bad Drivers in the United States
 #### Eitan Tuchin, Tirmidi Mohamed
 
 ## Introduction
@@ -14,11 +14,11 @@ The goal of our project is to explore data about bad drivers in the United State
 
 To achieve our project's goal we will answer the following questions:
 
-  1. Can we identify regional patterns (e.g., Northeast, South, Midwest, West) in bad driving behaviors like speeding      and alcohol impairment, and how do these align with fatal collision rates? 
+  1. Can we identify regional patterns in bad driving behaviors like speeding and alcohol impairment, and how do          these align with fatal collision rates? 
 
-  2. Are there states where the percentage of speeding-related fatal collisions significantly deviates from the            national average, and what state-specific factors (e.g., speed limits, road conditions) might explain this? 
+  2. Are there states where the percentage of speeding-related fatal collisions significantly deviates from the           national average, and what state-specific factors might explain this? 
 
-  3. How well can a predictive model (e.g., linear regression) use percentages of speeding, alcohol impairment, and        distraction to estimate fatal collisions per billion miles, and which factor is most influential?
+  3. How well can a predictive model use percentages of speeding, alcohol impairment, and distraction to                  estimate fatal collisions per billion miles, and which factor is most influential?
   
 These will be the main questions that we try and answer throughout our work on this project. We hope to get to some meaningful conclusions about bad drivers and their common trends in the United States.
 
@@ -34,7 +34,7 @@ Overall our dataset is pretty simple and it contains all of the data we need for
 The first thing we need to do is read in the csv file and take a look at it:
 
 ```{r}
-data <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/bad-drivers/bad-drivers.csv")
+data <- read.csv("bad-drivers.csv")
 summary(data)
 head(data)
 ```
@@ -80,7 +80,6 @@ data <- data[!duplicates, ]
 
 print("Final cleaned data:")
 head(data)
-summary(data)
 ```
 
 After cleaning our data it's ready to be analyzed and interpreted.
@@ -89,17 +88,104 @@ After cleaning our data it's ready to be analyzed and interpreted.
 
 Here we list all of the variables (columns) in our dataset:
 
-*
-*
-*
-*
-*
+* State - The state to which the statistics in the row are attributed to.
+* Fatal_Collisions_Per_Billion - Number of drivers involved in fatal collisions per billion miles.
+* Percent_Speeding - Percentage of drivers who were involved in fatal collisions who were speeding.
+* Percent_Alcohol - Percentage of drivers who were involved in fatal collisions who were alcohol-impaired.
+* Percent_Not_Distracted - Percentage of drivers who were involved in fatal collisions who were not distracted.
+* Percent_No_Prior - Percentage of drivers who were involved in fatal collisions who had not been in any previous accidents
+* Insurance_Premiums - Average cost of car insurance premiums in that state.
+* Losses_Per_Driver - Losses incurred by insurance companies for collisions per insured driver.
 
 ## Results
+
 ```{r}
-library(readr)
 library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(reshape2)
 ```
+
+
+### Can we identify regional patterns in bad driving behaviors like speeding and alcohol impairment, and how do these     align with fatal collision rates? 
+
+```{r}
+divisions <- list(
+  `New England` = c("Connecticut", "Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont"),
+  `Middle Atlantic` = c("New Jersey", "New York", "Pennsylvania"),
+  `East North Central` = c("Illinois", "Indiana", "Michigan", "Ohio", "Wisconsin"),
+  `West North Central` = c("Iowa", "Kansas", "Minnesota", "Missouri", "Nebraska", "North Dakota", "South Dakota"),
+  `South Atlantic` = c("Delaware", "Florida", "Georgia", "Maryland", "North Carolina", "South Carolina", 
+                      "Virginia", "West Virginia", "District of Columbia"),
+  `East South Central` = c("Alabama", "Kentucky", "Mississippi", "Tennessee"),
+  `West South Central` = c("Arkansas", "Louisiana", "Oklahoma", "Texas"),
+  `Mountain` = c("Arizona", "Colorado", "Idaho", "Montana", "Nevada", "New Mexico", "Utah", "Wyoming"),
+  `Pacific` = c("Alaska", "California", "Hawaii", "Oregon", "Washington")
+)
+
+data <- data %>%
+  mutate(Division = case_when(
+    State %in% divisions$`New England` ~ "New England",
+    State %in% divisions$`Middle Atlantic` ~ "Middle Atlantic",
+    State %in% divisions$`East North Central` ~ "East North Central",
+    State %in% divisions$`West North Central` ~ "West North Central",
+    State %in% divisions$`South Atlantic` ~ "South Atlantic",
+    State %in% divisions$`East South Central` ~ "East South Central",
+    State %in% divisions$`West South Central` ~ "West South Central",
+    State %in% divisions$`Mountain` ~ "Mountain",
+    State %in% divisions$`Pacific` ~ "Pacific",
+    TRUE ~ NA_character_
+  ))
+
+division_summary <- data %>%
+  group_by(Division) %>%
+  summarise(
+    Avg_Percent_Speeding = mean(Percent_Speeding, na.rm = TRUE),
+    Avg_Percent_Alcohol = mean(Percent_Alcohol, na.rm = TRUE),
+    Avg_Fatal_Collisions = mean(Fatal_Collisions_Per_Billion, na.rm = TRUE)
+  )
+
+print("Division Summary:")
+print(division_summary)
+
+# Reshape data for heatmap
+heatmap_data <- division_summary %>%
+  select(Division, Avg_Percent_Speeding, Avg_Percent_Alcohol, Avg_Fatal_Collisions) %>%
+  melt(id.vars = "Division")
+
+# Plot
+ggplot(heatmap_data, aes(x = variable, y = Division, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "lightyellow", high = "red", name = "Average Value") +
+  labs(
+    title = "Regional Patterns: Speeding, Alcohol, and Fatal Collisions",
+    subtitle = "Darker shades indicate higher values",
+    x = "Metric",
+    y = "Region"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+ggplot(data, aes(x = Percent_Alcohol, y = Percent_Speeding, 
+                 size = Fatal_Collisions_Per_Billion, color = Division)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed") +
+  scale_size_continuous(name = "Fatal Collisions\n(per billion miles)") +
+  labs(
+    title = "Alcohol vs. Speeding in Fatal Collisions",
+    subtitle = "Point size = Fatal collision rate; Color = Region",
+    x = "Alcohol-Impaired Drivers (%)",
+    y = "Speeding Drivers (%)"
+  ) +
+  theme_minimal()
+```
+
+### Are there states where the percentage of speeding-related fatal collisions significantly deviates from the           national average, and what state-specific factors (e.g., speed limits, road conditions) might explain this? 
+
+### How well can a predictive model (e.g., linear regression) use percentages of speeding, alcohol impairment, and       distraction to estimate fatal collisions per billion miles, and which factor is most influential?
+
 
 ## Conclusion
 
