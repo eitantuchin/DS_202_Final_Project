@@ -501,6 +501,7 @@ data <- data %>%
 # Identify states deviating significantly (e.g., more than 1.5 SD from the mean)
 significant_deviators <- data %>%
   filter(abs(Speeding_Deviation_SD) > 1.5) %>%
+  
   arrange(desc(Speeding_Deviation_SD))
 
 print("States with speeding percentages > 1.5 SD from national average:")
@@ -663,6 +664,39 @@ reliable predictors of the overall fatal collision rate per billion
 miles. There might be more complex relationships, issues with the data
 aggregation at the state level, or other unmeasured factors that are
 more important.
+
+``` r
+# 📈 Graph 1: Fatal Collisions vs Percent Alcohol (Simple Scatter)
+ggplot(data, aes(x = Percent_Alcohol, y = Fatal_Collisions_Per_Billion)) +
+  geom_point(color = "blue", size = 3) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Fatal Collisions vs Percentage of Alcohol-Impaired Drivers",
+       x = "Percentage of Alcohol-Impaired Drivers",
+       y = "Fatal Collisions per Billion Miles") +
+  theme_minimal()
+```
+
+    ## `geom_smooth()` using formula = 'y ~ x'
+
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+``` r
+# 📈 Graph 2: Predicted vs Actual Fatal Collisions (Smoothed)
+# Predict values again if needed
+data$Predicted_Collisions <- predict(collision_model)
+
+ggplot(data, aes(x = Fatal_Collisions_Per_Billion, y = Predicted_Collisions)) +
+  geom_point(color = "darkorange", size = 3) +
+  geom_smooth(method = "lm", se = FALSE, color = "steelblue") +
+  labs(title = "Predicted vs Actual Fatal Collisions",
+       x = "Actual Fatal Collisions per Billion Miles",
+       y = "Predicted Fatal Collisions per Billion Miles") +
+  theme_minimal()
+```
+
+    ## `geom_smooth()` using formula = 'y ~ x'
+
+![](README_files/figure-gfm/unnamed-chunk-11-2.png)<!-- -->
 
 ## Conclusion
 

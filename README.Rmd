@@ -204,6 +204,7 @@ data <- data %>%
 # Identify states deviating significantly (e.g., more than 1.5 SD from the mean)
 significant_deviators <- data %>%
   filter(abs(Speeding_Deviation_SD) > 1.5) %>%
+  
   arrange(desc(Speeding_Deviation_SD))
 
 print("States with speeding percentages > 1.5 SD from national average:")
@@ -263,6 +264,32 @@ The model summary provides insights into how well these factors collectively pre
 * **Most Influential Factor:** Since **none** of the predictors (`Percent_Speeding`, `Percent_Alcohol`, `Percent_Not_Distracted`) were found to be statistically significant (all p-values > 0.05), **we cannot identify a 'most influential' factor based on this linear model**. The model fails to establish a statistically reliable link between these specific behavioral percentages and the rate of fatal collisions per billion miles across states.
 
 In summary, the linear model attempted here performs very poorly (Adjusted R-squared ≈ -0.013) and does not provide statistically significant evidence that the state-level percentages of speeding, alcohol impairment, or non-distraction (as measured in this dataset) are reliable predictors of the overall fatal collision rate per billion miles. There might be more complex relationships, issues with the data aggregation at the state level, or other unmeasured factors that are more important.
+
+```{r}
+# 📈 Graph 1: Fatal Collisions vs Percent Alcohol (Simple Scatter)
+ggplot(data, aes(x = Percent_Alcohol, y = Fatal_Collisions_Per_Billion)) +
+  geom_point(color = "blue", size = 3) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Fatal Collisions vs Percentage of Alcohol-Impaired Drivers",
+       x = "Percentage of Alcohol-Impaired Drivers",
+       y = "Fatal Collisions per Billion Miles") +
+  theme_minimal()
+
+
+
+# 📈 Graph 2: Predicted vs Actual Fatal Collisions (Smoothed)
+# Predict values again if needed
+data$Predicted_Collisions <- predict(collision_model)
+
+ggplot(data, aes(x = Fatal_Collisions_Per_Billion, y = Predicted_Collisions)) +
+  geom_point(color = "darkorange", size = 3) +
+  geom_smooth(method = "lm", se = FALSE, color = "steelblue") +
+  labs(title = "Predicted vs Actual Fatal Collisions",
+       x = "Actual Fatal Collisions per Billion Miles",
+       y = "Predicted Fatal Collisions per Billion Miles") +
+  theme_minimal()
+
+```
 
 ## Conclusion
 
